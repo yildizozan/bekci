@@ -1,0 +1,21 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: bekci
+  labels:
+    app: bekci
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bekci
+  template:
+    metadata:
+      labels:
+        app: bekci
+    spec:
+      containers:
+        - name: bekci
+          image: yildizozan/bekci:0.0.1
+          ports:
+            - containerPort: 443
