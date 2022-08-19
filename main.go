@@ -14,11 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
-const RequiredLabel string = "gophercon.turkiye/available"
+const RequiredLabel string = "available"
 
 var universalDeserializer = serializer.NewCodecFactory(runtime.NewScheme()).UniversalDeserializer()
 
-func Validate(rw http.ResponseWriter, r *http.Request) {
+func handler(rw http.ResponseWriter, r *http.Request) {
 	var body []byte
 	if r.Body != nil {
 		if data, err := ioutil.ReadAll(r.Body); err == nil {
@@ -71,13 +71,15 @@ func validateLabel(r *v1.AdmissionRequest) *v1.AdmissionResponse {
 	response := v1.AdmissionResponse{}
 	var pod corev1.Pod
 
-	if pod.Spec.Containers[0].Resources.Limits.Memory().String() == "128Mi" {
-		response.Allowed = false
-		response.Result = &metav1.Status{
-			Reason:  "No limit resource or equals to 128Mi",
-			Message: "sfasdf",
+	/*
+		if pod.Spec.Containers[0].Resources.Limits.Memory().String() == "128Mi" {
+			response.Allowed = false
+			response.Result = &metav1.Status{
+				Reason:  "No limit resource or equals to 128Mi",
+				Message: "sfasdf",
+			}
 		}
-	}
+	*/
 
 	if _, _, err := universalDeserializer.Decode(r.Object.Raw, nil, &pod); err != nil {
 		response.Allowed = false
@@ -107,7 +109,7 @@ func validateLabel(r *v1.AdmissionRequest) *v1.AdmissionResponse {
 }
 
 func main() {
-	http.HandleFunc("/", Validate)
+	http.HandleFunc("/", handler)
 
 	http.ListenAndServe("0.0.0.0:8080", nil)
 }

@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # specify the base image to  be used for the application, alpine or ubuntu
-FROM golang:1.19-alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:1.19-alpine AS builder
 
 # create a working directory inside the image
 WORKDIR /app
@@ -16,7 +16,13 @@ RUN go mod download
 COPY *.go ./
 
 # compile application
-RUN CGO_ENABLED=0 go build -o /bekci
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN --mount=target=. \
+    --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg \
+    GOOS=$TARGETOS GOARCH=$TARGETARCH CGO_ENABLED=0 go build -o /bekci
 
 FROM scratch
 
